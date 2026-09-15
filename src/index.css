@@ -1,0 +1,459 @@
+@import "tailwindcss";
+
+/* ============================================================
+   《星溯旅者》全局样式
+   星蓝 / 浅紫 / 纯白 / 微光渐变 · 玻璃拟态 · 治愈动效
+   ============================================================ */
+
+:root {
+  --star-1: #a5b4fc;
+  --star-2: #7dd3fc;
+  --star-3: #f0abfc;
+  --ink: #eef2ff;
+  --ink-dim: rgba(238, 242, 255, 0.72);
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: "PingFang SC", "HarmonyOS Sans SC", "MiSans", "Source Han Sans SC",
+    "Noto Sans SC", "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  background:
+    radial-gradient(1100px 700px at 78% -8%, rgba(99, 102, 241, 0.28), transparent 60%),
+    radial-gradient(900px 620px at 12% 108%, rgba(125, 211, 252, 0.20), transparent 60%),
+    radial-gradient(760px 520px at 88% 88%, rgba(240, 171, 252, 0.14), transparent 65%),
+    linear-gradient(180deg, #0b1026 0%, #131a3f 52%, #0e1230 100%);
+  overflow: hidden;
+}
+
+::selection { background: rgba(165, 180, 252, 0.4); }
+
+/* ---------- 滚动条 ---------- */
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(165, 180, 252, 0.28);
+  border-radius: 99px;
+}
+*::-webkit-scrollbar-thumb:hover { background: rgba(165, 180, 252, 0.5); }
+
+/* ---------- 玻璃拟态 ---------- */
+.glass {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.05));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 8px 32px rgba(2, 6, 23, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+.glass-deep {
+  background: linear-gradient(135deg, rgba(20, 24, 56, 0.72), rgba(14, 18, 44, 0.82));
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 12px 44px rgba(2, 6, 23, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* ---------- 文本特效 ---------- */
+.text-gradient {
+  background: linear-gradient(115deg, #e0e7ff 12%, #a5b4fc 38%, #7dd3fc 62%, #f0abfc 88%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.text-glow { text-shadow: 0 0 18px rgba(165, 180, 252, 0.65), 0 0 42px rgba(125, 211, 252, 0.35); }
+.text-gold {
+  background: linear-gradient(115deg, #fef9c3, #fde047 45%, #fbbf24);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: none;
+}
+
+/* ---------- 按钮 ---------- */
+.btn {
+  position: relative;
+  border-radius: 1rem;
+  padding: 0.65rem 1.5rem;
+  font-weight: 600;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s, background 0.22s, border-color 0.22s;
+  cursor: pointer;
+  user-select: none;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+  background: linear-gradient(120deg, rgba(129, 140, 248, 0.85), rgba(56, 189, 248, 0.85));
+  border: 1px solid rgba(224, 231, 255, 0.5);
+  color: #fff;
+  box-shadow: 0 6px 24px rgba(99, 102, 241, 0.45);
+}
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 10px 34px rgba(125, 211, 252, 0.55);
+}
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: var(--ink);
+  backdrop-filter: blur(8px);
+}
+.btn-ghost:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(165, 180, 252, 0.7);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 26px rgba(129, 140, 248, 0.35);
+}
+.btn-danger {
+  background: rgba(244, 63, 94, 0.16);
+  border: 1px solid rgba(251, 113, 133, 0.5);
+  color: #fecdd3;
+}
+.btn-danger:hover { background: rgba(244, 63, 94, 0.3); transform: translateY(-2px); }
+
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+
+/* ---------- 卡片悬浮 ---------- */
+.card-hover {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s, border-color 0.3s;
+}
+.card-hover:hover {
+  transform: translateY(-6px);
+  border-color: rgba(165, 180, 252, 0.65);
+  box-shadow: 0 18px 48px rgba(99, 102, 241, 0.35);
+}
+
+/* ---------- 呼吸感 ---------- */
+.anim-breathe { animation: breathe 3.4s ease-in-out infinite; }
+@keyframes breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.022); }
+}
+
+.anim-breathe-soft { animation: breatheSoft 4.2s ease-in-out infinite; }
+@keyframes breatheSoft {
+  0%, 100% { opacity: 0.82; }
+  50% { opacity: 1; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/* ---------- 漂浮 ---------- */
+.anim-float { animation: floatY 5s ease-in-out infinite; }
+.anim-float-slow { animation: floatY 6.5s ease-in-out infinite; }
+@keyframes floatY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.anim-drift { animation: drift 14s ease-in-out infinite alternate; }
+@keyframes drift {
+  from { transform: translate(0, 0); }
+  to { transform: translate(-14px, 10px); }
+}
+
+.anim-cloud { animation: cloudMove linear infinite; }
+@keyframes cloudMove {
+  from { transform: translateX(-30%); }
+  to { transform: translateX(130vw); }
+}
+
+.anim-aurora { animation: auroraSway 11s ease-in-out infinite alternate; transform-origin: center; }
+@keyframes auroraSway {
+  from { transform: translateX(-2.5%) scaleY(1); opacity: 0.75; }
+  to { transform: translateX(2.5%) scaleY(1.08); opacity: 1; }
+}
+
+/* ---------- 红月余烬 / 晨曦花瓣 ---------- */
+.anim-ember { animation: emberRise linear infinite; }
+@keyframes emberRise {
+  0% { transform: translateY(0) translateX(0); opacity: 0; }
+  12% { opacity: 0.95; }
+  80% { opacity: 0.8; }
+  100% { transform: translateY(-88vh) translateX(6vw); opacity: 0; }
+}
+
+.anim-petal { animation: petalFall linear infinite; }
+@keyframes petalFall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(90vh) rotate(320deg); opacity: 0; }
+}
+
+/* ---------- 战斗 ---------- */
+.anim-hurt { animation: hurtShake 0.42s ease-in-out; }
+@keyframes hurtShake {
+  0%, 100% { transform: translateX(0); filter: none; }
+  25% { transform: translateX(-7px); filter: brightness(2.2) saturate(0.4); }
+  55% { transform: translateX(6px); filter: brightness(1.8); }
+  80% { transform: translateX(-3px); }
+}
+
+.anim-charge { animation: chargeShiver 0.5s ease-in-out infinite; }
+@keyframes chargeShiver {
+  0%, 100% { transform: scale(1.04) translateY(0); }
+  50% { transform: scale(1.04) translateY(-4px); }
+}
+
+.anim-pop { animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@keyframes popIn {
+  from { transform: scale(0.6); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ---------- 伤害飘字 ---------- */
+.dmg-float {
+  position: absolute;
+  font-weight: 800;
+  pointer-events: none;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+  animation: dmgUp 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  white-space: nowrap;
+}
+@keyframes dmgUp {
+  0% { transform: translateY(0) scale(0.7); opacity: 0; }
+  18% { transform: translateY(-14px) scale(1.15); opacity: 1; }
+  100% { transform: translateY(-74px) scale(0.95); opacity: 0; }
+}
+
+/* ---------- 技能特效关键帧 ---------- */
+@keyframes fxSweep {
+  0% { transform: translate(0, 0) rotate(-16deg) scaleX(0.2); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translate(28px, -8px) rotate(-16deg) scaleX(1.35); opacity: 0; }
+}
+@keyframes fxFall {
+  0% { transform: translateY(-90px) rotate(24deg); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translateY(70px) rotate(24deg); opacity: 0; }
+}
+@keyframes fxSpin {
+  0% { transform: rotate(0deg) scale(0.5); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: rotate(200deg) scale(1.15); opacity: 0; }
+}
+@keyframes fxRay {
+  0% { transform: rotate(var(--r, 0deg)) translateY(4px) scaleY(0.25); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: rotate(var(--r, 0deg)) translateY(30px) scaleY(1.4); opacity: 0; }
+}
+@keyframes fxRise {
+  0% { transform: translateY(0) scale(0.7); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translateY(-72px) scale(1); opacity: 0; }
+}
+@keyframes fxRing {
+  0% { transform: scale(0.3); opacity: 0.95; }
+  100% { transform: scale(1.65); opacity: 0; }
+}
+@keyframes fxDrop {
+  0% { transform: translateY(-80px) scale(0.7); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateY(74px) scale(1.05); opacity: 0; }
+}
+@keyframes fxClaw {
+  0% { transform: rotate(-24deg) translateX(-26px); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: rotate(-24deg) translateX(30px); opacity: 0; }
+}
+@keyframes fxRift {
+  0% { transform: scaleY(0.1); opacity: 0; }
+  30% { transform: scaleY(1); opacity: 1; }
+  75% { opacity: 1; }
+  100% { transform: scaleY(1.15); opacity: 0; }
+}
+@keyframes fxGather {
+  0% { transform: translate(0, 0) scale(1); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translate(var(--gx, 0px), var(--gy, 0px)) scale(0.4); opacity: 0; }
+}
+@keyframes fxImpact {
+  0% { transform: scale(0.45); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
+@keyframes fxFlash {
+  0% { opacity: 0; }
+  22% { opacity: 0.6; }
+  100% { opacity: 0; }
+}
+@keyframes fxSpark {
+  0% { transform: translate(0, 0) scale(1); opacity: 0; }
+  14% { opacity: 1; }
+  100% { transform: translate(var(--sx, 0px), var(--sy, 0px)) scale(0.35); opacity: 0; }
+}
+@keyframes fxStreak {
+  0% { transform: rotate(var(--sr, 0deg)) scaleY(0.18); opacity: 0; }
+  28% { opacity: 0.95; }
+  100% { transform: rotate(var(--sr, 0deg)) scaleY(1.45); opacity: 0; }
+}
+
+/* ---------- 打击感：屏幕震动 ----------
+   位移时同步做极轻微缩放，避免整屏位移/旋转露出视口边缘 */
+.anim-shake-sm { animation: shakeSm 400ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+@keyframes shakeSm {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  18% { transform: translate3d(-5px, 3px, 0) scale(1.012); }
+  42% { transform: translate3d(6px, -4px, 0) scale(1.012); }
+  66% { transform: translate3d(-4px, 2px, 0) scale(1.012); }
+  86% { transform: translate3d(2px, -1px, 0) scale(1.006); }
+}
+.anim-shake-lg { animation: shakeLg 540ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+@keyframes shakeLg {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1) rotate(0deg); }
+  12% { transform: translate3d(-11px, 6px, 0) scale(1.026) rotate(-0.5deg); }
+  30% { transform: translate3d(12px, -8px, 0) scale(1.026) rotate(0.55deg); }
+  50% { transform: translate3d(-9px, 5px, 0) scale(1.022) rotate(-0.4deg); }
+  70% { transform: translate3d(7px, -3px, 0) scale(1.016) rotate(0.3deg); }
+  88% { transform: translate3d(-3px, 1px, 0) scale(1.008) rotate(-0.15deg); }
+}
+
+/* ---------- 受击红晕 ---------- */
+.anim-vignette { animation: vignetteFlash 470ms ease-out both; }
+@keyframes vignetteFlash {
+  0% { opacity: 0; }
+  16% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* 玩家面板受击描边 */
+.player-hurt {
+  border-color: rgba(244, 63, 94, 0.85) !important;
+  box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.45), 0 0 36px rgba(244, 63, 94, 0.45),
+    inset 0 0 26px rgba(244, 63, 94, 0.22) !important;
+}
+
+/* ---------- 屏幕切换 ---------- */
+.anim-screen { animation: screenIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes screenIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.995); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* ---------- 背景照片呼吸缩放（轻微出血裁掉图片边缘水印） ---------- */
+.anim-kenburns { animation: kenburns 38s ease-in-out infinite alternate; will-change: transform; }
+@keyframes kenburns {
+  from { transform: scale(1.13); }
+  to { transform: scale(1.19) translate(-1%, 0.6%); }
+}
+
+.anim-fade-in { animation: fadeIn 0.6s ease both; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* fill-mode 用 backwards 而非 both：延迟期间同样保持"未出现"状态，
+   但动画结束后不再常驻 transform，否则会压掉 .card-hover:hover 的上浮位移 */
+.anim-rise { animation: riseIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) backwards; }
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.anim-toast { animation: toastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(30px) scale(0.92); }
+  to { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+/* ---------- 章节卡 ---------- */
+.anim-chapter { animation: chapterIn 1s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes chapterIn {
+  0% { opacity: 0; letter-spacing: 0.6em; filter: blur(8px); }
+  100% { opacity: 1; letter-spacing: 0.28em; filter: blur(0); }
+}
+
+/* ---------- 打字机光标 ---------- */
+.typing-caret::after {
+  content: "▍";
+  margin-left: 2px;
+  color: var(--star-1);
+  animation: caretBlink 0.85s step-end infinite;
+}
+@keyframes caretBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* ---------- 对话继续指示 ---------- */
+.anim-next { animation: nextBounce 1.1s ease-in-out infinite; }
+@keyframes nextBounce {
+  0%, 100% { transform: translateY(0); opacity: 0.55; }
+  50% { transform: translateY(4px); opacity: 1; }
+}
+
+/* ---------- 好感度条 ---------- */
+.aff-fill { transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* ---------- 结局标题 ---------- */
+.anim-ending-title { animation: endingTitle 1.6s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes endingTitle {
+  0% { opacity: 0; transform: scale(0.86); filter: blur(10px); letter-spacing: 0.5em; }
+  100% { opacity: 1; transform: scale(1); filter: blur(0); letter-spacing: 0.12em; }
+}
+
+.anim-star-burst { animation: starBurst 2.8s ease-out infinite; }
+@keyframes starBurst {
+  0% { transform: scale(0.4) rotate(0deg); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: scale(1.6) rotate(90deg); opacity: 0; }
+}
+
+/* ============================================================
+   图鉴 · 星图 / 回忆 CG
+   ============================================================ */
+
+/* 星点闪烁（配 animationDelay 错峰，星图才有"活"的感觉） */
+.anim-twinkle { animation: twinkle 3.4s ease-in-out infinite; }
+@keyframes twinkle {
+  0%, 100% { opacity: 0.28; transform: scale(0.82); }
+  50% { opacity: 1; transform: scale(1.18); }
+}
+
+/* 光弦缓转 */
+.anim-spin-slow { animation: spinSlow 28s linear infinite; transform-origin: center; }
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 回忆卡星尘 */
+.anim-dust { animation: dustFloat 6.5s ease-in-out infinite; }
+@keyframes dustFloat {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.18; }
+  50% { transform: translateY(-14px) scale(1.35); opacity: 0.8; }
+}
+
+/* 悬停扫光：一道高光斜掠过卡面 */
+.codex-sweep { position: relative; }
+.codex-sweep::before {
+  content: "";
+  position: absolute;
+  top: -12%;
+  bottom: -12%;
+  left: 0;
+  width: 46%;
+  z-index: 20;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.16), transparent);
+  transform: translateX(-180%) skewX(-16deg);
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.codex-sweep:hover::before { transform: translateX(330%) skewX(-16deg); }
+
+/* 回忆卡内框（胶片感） */
+.cg-inner-line {
+  position: absolute;
+  inset: 7px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-twinkle,
+  .anim-spin-slow,
+  .anim-dust { animation: none !important; }
+  .codex-sweep::before { transition: none !important; }
+}

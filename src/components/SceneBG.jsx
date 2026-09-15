@@ -8,10 +8,10 @@
 //   ending 璀璨星海 · 浪漫治愈（结局专用）
 // ==========================
 
-import galaxy from '../assets/bg/galaxy.jpg'
-import abyssBg from '../assets/bg/abyss.jpg'
-import pastel from '../assets/bg/pastel.jpg'
-import ui from '../assets/bg/ui.jpg'
+import galaxy from '../assets/bg/galaxy.webp'
+import abyssBg from '../assets/bg/abyss.webp'
+import pastel from '../assets/bg/pastel.webp'
+import ui from '../assets/bg/ui.webp'
 
 const LAYERS = {
   star: { src: galaxy, top: 'rgba(11,16,38,0.28)', bottom: 'rgba(13,18,44,0.58)', decor: 'aurora' },

@@ -127,10 +127,9 @@ export default function SkillFX({ fx }) {
     }
 
     switch (kind) {
-      /* 玩家普攻 / 星镰斩 / 虚空裂隙·斩：挥斩弧光 */
-      case 'slash':
-      case 'scythe': {
-        const w = kind === 'scythe' ? 200 : 120
+      /* 玩家普攻：挥斩弧光 */
+      case 'slash': {
+        const w = 120
         for (let i = 0; i < 3; i++) {
           add(
             {
@@ -144,13 +143,56 @@ export default function SkillFX({ fx }) {
               borderLeft: '2px solid transparent',
               borderRight: '2px solid transparent',
               filter: `drop-shadow(0 0 ${9 - i * 2}px ${color})`,
-              transform: `rotate(${kind === 'scythe' ? -26 : -14}deg)`,
+              transform: 'rotate(-14deg)',
               animation: `fxSweep ${620}ms ease-out ${i * 110}ms both`,
             },
             `s${i}`,
           )
         }
-        impactAt(0, 0, kind === 'scythe' ? 1.2 : 0.95, 150)
+        impactAt(0, 0, 0.95, 150)
+        break
+      }
+
+      /* 星镰斩：巨型镰刃划出的弯月斩痕 */
+      case 'scythe': {
+        for (let i = 0; i < 3; i++) {
+          const d = 210 + i * 46
+          add(
+            {
+              ...at(0, 0),
+              width: d * S,
+              height: d * S,
+              marginLeft: (-d * S) / 2,
+              marginTop: (-d * S) / 2,
+              borderRadius: '50%',
+              border: `${7 - i * 2}px solid transparent`,
+              borderTopColor: i === 0 ? '#ffffff' : color,
+              borderLeftColor: i === 1 ? color : 'transparent',
+              filter: `drop-shadow(0 0 14px ${color})`,
+              transform: `rotate(${-38 + i * 26}deg)`,
+              animation: `fxSpin ${700}ms cubic-bezier(0.22,1,0.36,1) ${i * 90}ms both`,
+            },
+            `sc${i}`,
+          )
+        }
+        // 镰刃拖出的细长光丝
+        for (let i = 0; i < 5; i++) {
+          add(
+            {
+              ...at(rand(-90, 90), rand(-40, 40)),
+              width: 120,
+              height: 2,
+              borderRadius: 2,
+              transformOrigin: '0% 50%',
+              background: `linear-gradient(90deg, #ffffff, ${color}, transparent)`,
+              boxShadow: `0 0 10px ${color}`,
+              transform: `rotate(${rand(-60, 20)}deg)`,
+              animation: `fxSweep ${560}ms ease-out ${i * 70}ms both`,
+            },
+            `st${i}`,
+          )
+        }
+        impactAt(0, 0, 1.25, 200)
         break
       }
 
@@ -422,22 +464,42 @@ export default function SkillFX({ fx }) {
         break
       }
 
-      /* 影爪 / 先手：爪痕 */
+      /* 影爪 / 先手：三道平行爪痕，自左上斜劈而下 */
       case 'claw': {
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < 3; i++) {
+          const off = (i - 1) * 26
+          // 主爪痕
           add(
             {
-              ...at(rand(-70, 70), rand(-34, 34)),
-              width: 52,
-              height: 5,
+              ...at(off, off * 0.5),
+              width: 86,
+              height: i === 1 ? 6 : 4,
+              marginLeft: -43,
               borderRadius: 3,
-              background: i === 0 ? '#ffffff' : color,
-              boxShadow: `0 0 11px ${color}99`,
-              transform: 'rotate(-24deg)',
-              animation: `fxClaw 560ms ease-out ${i * 92}ms both`,
+              background: `linear-gradient(90deg, transparent, ${i === 1 ? '#ffffff' : color} 18%, ${color} 82%, transparent)`,
+              boxShadow: `0 0 14px ${color}, 0 0 4px #ffffff`,
+              transform: 'rotate(-32deg)',
+              animation: `fxClaw 520ms cubic-bezier(0.22,1,0.36,1) ${i * 85}ms both`,
             },
             `cl${i}`,
           )
+          // 爪尖迸出的火星
+          for (let k = 0; k < 2; k++) {
+            add(
+              {
+                ...at(off + rand(20, 46), off * 0.5 + rand(4, 26)),
+                width: rand(2, 4),
+                height: rand(2, 4),
+                borderRadius: '50%',
+                background: '#ffffff',
+                boxShadow: `0 0 8px ${color}`,
+                '--sx': `${rand(-24, 30)}px`,
+                '--sy': `${rand(10, 40)}px`,
+                animation: `fxSpark ${rand(380, 560)}ms ease-out ${i * 85 + 90}ms both`,
+              },
+              `cls${i}${k}`,
+            )
+          }
         }
         impactAt(0, 0, 1.05, 190)
         break

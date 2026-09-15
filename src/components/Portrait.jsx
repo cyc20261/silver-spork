@@ -7,10 +7,10 @@
 // ==========================
 
 import { CHARACTERS } from '../data/characters'
-import xingbaiImg from '../assets/chars/xingbai.jpg'
-import linyueImg from '../assets/chars/linyue.jpg'
-import yaoguangImg from '../assets/chars/yaoguang.jpg'
-import jinyuImg from '../assets/chars/jinyu.jpg'
+import xingbaiImg from '../assets/chars/xingbai.webp'
+import linyueImg from '../assets/chars/linyue.webp'
+import yaoguangImg from '../assets/chars/yaoguang.webp'
+import jinyuImg from '../assets/chars/jinyu.webp'
 
 const CHAR_IMAGES = {
   xingbai: xingbaiImg,

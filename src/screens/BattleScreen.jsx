@@ -8,6 +8,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useGame, useNav, CHARACTERS, RELIC_EFFECTS } from '../game/store'
 import { useToast } from '../game/toast'
+import { sfx } from '../game/audio'
 import { BATTLES } from '../data/battles'
 import { RELICS, CODEX_MAP } from '../data/codex'
 import { ITEM_IMAGES } from '../data/itemImages'
@@ -43,6 +44,30 @@ const ENEMY_SKILL_FX = {
   shatteredpress: ['shards', '#c4b5fd'],
   darkstar: ['devour', '#7c3aed'],
   'dimrift-x': ['burst', '#8b5cf6'],
+}
+
+/* 技能 id → 专属音效（11 个敌方技能各有独立音色，与特效同步播放） */
+const SKILL_SFX = {
+  stardust: 'stardust',
+  shadowtouch: 'shadowtouch',
+  shadowclaw: 'shadowclaw',
+  voidbite: 'voidbite',
+  starscythe: 'starscythe',
+  voidrift: 'voidrift',
+  'voidrift-x': 'voidriftx',
+  abyssburst: 'abyssburst',
+  shatteredpress: 'shatteredpress',
+  darkstar: 'darkstar',
+  dimrift: 'dimrift',
+  'dimrift-x': 'dimriftx',
+  soulharvest: 'soulharvest',
+}
+/* 玩家星技 → 专属音效（跟随角色的星技形态） */
+const PLAYER_SKILL_SFX = {
+  meteor: 'meteor',
+  moonslash: 'moonslash',
+  sunburst: 'sunburst',
+  feather: 'feather',
 }
 
 // 序章教学战：没有同行星灵，由溯星罗盘护航
@@ -187,6 +212,8 @@ export default function BattleScreen() {
     const fxKind = fxMap ? fxMap[0] : 'impact'
     if (fxMap) playFX(fxMap[0], fxMap[1], 'player', skill.mult >= 2)
     else playFX('impact', cfg.color, 'player')
+    // 每个技能各自的音色，与特效同时起音
+    sfx(SKILL_SFX[skill.id] || 'shadowtouch')
     const phaseMult = cfg.phases && eRef.current.phase === 2 ? 1.2 : 1
     const hits = skill.hits || 1
     for (let i = 0; i < hits; i++) {
@@ -200,10 +227,12 @@ export default function BattleScreen() {
       if (dodged) {
         addLog('⚡ 你灵巧地闪过了攻击！')
         addFloater('闪避！', 'player', '#7dd3fc')
+        sfx('dodge')
       } else {
         pRef.current.hp = Math.max(0, pRef.current.hp - dmg)
         addLog(`${crit ? '‼ 暴击！' : ''}${cfg.name}使出「${skill.name}」，造成 ${dmg} 点伤害${hits > 1 ? '（连击）' : ''}`)
         addFloater(`-${dmg}${crit ? '!' : ''}`, 'player', crit ? '#fb7185' : '#fda4af', crit)
+        sfx(crit ? 'crit' : 'hit')
         doShake(crit || (skill.mult || 1) >= 2 ? 'lg' : 'sm', impactDelayOf(fxKind))
         await flashHurt('player')
         // 暗影触碰 / 暗星吞噬：吞噬星光回复自身
@@ -239,6 +268,7 @@ export default function BattleScreen() {
         e.phase = 2
         addLog(`༒ 星渊觉醒——${cfg.name}进入第二形态，全部能力提升！`)
         addFloater('第二形态！', 'enemy', '#f43f5e', true)
+        sfx('dimrift')
         sync()
         await sleep(1000)
       }
@@ -256,6 +286,7 @@ export default function BattleScreen() {
           addLog(skill.telegraph)
           addFloater('蓄力中…', 'enemy', '#fda4af')
           playFX('rift', cfg.color, 'enemy')
+          sfx(SKILL_SFX[skill.id] || 'voidrift')
         } else {
           await resolveEnemySkill(skill)
         }
@@ -268,6 +299,7 @@ export default function BattleScreen() {
     if (pRef.current.hp <= 0) {
       phaseRef.current = 'lose'
       addLog('……星光即将熄灭。')
+      sfx('lose')
       sync()
       return
     }
@@ -309,10 +341,14 @@ export default function BattleScreen() {
     }
 
     const dealDamage = async (dmg, label, color = '#fbbf24', big = false, noDodge = false, fxKind = 'slash') => {
-      if (!noDodge && enemyDodges()) return
+      if (!noDodge && enemyDodges()) {
+        sfx('dodge')
+        return
+      }
       eRef.current.hp = Math.max(0, eRef.current.hp - dmg)
       addLog(`${label}，对${cfg.name}造成 ${dmg} 点伤害`)
       addFloater(`-${dmg}`, 'enemy', color, big)
+      sfx('hit')
       doShake(big ? 'lg' : 'sm', impactDelayOf(fxKind))
       await flashHurt('enemy')
       if (routeChar?.id === 'jinyu' && dmg > 0 && eRef.current.hp > 0) {
@@ -326,6 +362,7 @@ export default function BattleScreen() {
       const dmg = rnd(12, 18)
       pRef.current.en = Math.min(MAX_EN, pRef.current.en + 6)
       playFX('slash', '#ffffff', 'enemy')
+      sfx('slash')
       await dealDamage(dmg, '你挥出星辉普攻')
     } else if (type === 'skill') {
       if (pRef.current.en < SKILL_COST) { busyRef.current = false; sync(); return }
@@ -334,6 +371,8 @@ export default function BattleScreen() {
       if (routeChar?.id === 'linyue') dmg = Math.round(dmg * 1.3)
       const [fk, fc] = PLAYER_SKILL_FX[routeChar?.id || 'compass'] || ['meteor', '#a5b4fc']
       playFX(fk, fc, 'enemy')
+      // 四位星灵的星技各有专属音色
+      sfx(PLAYER_SKILL_SFX[fk] || 'meteor')
       await dealDamage(dmg, `✨ ${companion.skill.name}！`, '#a5b4fc', true, false, fk)
     } else if (type === 'dodge') {
       pRef.current.dodging = true
@@ -341,6 +380,7 @@ export default function BattleScreen() {
       addLog('🌀 你进入闪避姿态（本回合大幅提升闪避）')
       addFloater('闪避姿态', 'player', '#7dd3fc')
       playFX('dodgering', '#7dd3fc', 'player')
+      sfx('dodge')
     } else if (type === 'heal') {
       if (pRef.current.en < HEAL_COST) { busyRef.current = false; sync(); return }
       pRef.current.en -= HEAL_COST
@@ -349,6 +389,7 @@ export default function BattleScreen() {
       addLog(`💚 星光治愈，回复 ${heal} 点生命`)
       addFloater(`+${heal}`, 'player', '#86efac', true)
       playFX('heal', '#86efac', 'player')
+      sfx('heal')
     }
     sync()
 
@@ -357,6 +398,7 @@ export default function BattleScreen() {
       await sleep(500)
       phaseRef.current = 'win'
       addLog(`🌟 ${cfg.name}被净化了！`)
+      sfx('win')
       sync()
       return
     }

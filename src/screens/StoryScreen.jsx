@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGame, useNav, CHARACTERS } from '../game/store'
 import { useToast } from '../game/toast'
+import { sfx, speak, stopSpeak } from '../game/audio'
 import { getNode, getRoute, CHAPTER_TITLES } from '../data/story'
 import { BATTLES } from '../data/battles'
 import { CODEX_MAP } from '../data/codex'
@@ -31,6 +32,8 @@ function useTypewriter(text, speed = 32) {
     timerRef.current = setInterval(() => {
       i += 1
       setShown(text.slice(0, i))
+      // 每 4 个字一下轻微的敲击声（非空白字符才出声）
+      if (i % 4 === 0 && text[i - 1] && !/\s/.test(text[i - 1])) sfx('type')
       if (i >= text.length) {
         clearInterval(timerRef.current)
         setDone(true)
@@ -98,6 +101,7 @@ export default function StoryScreen() {
         const item = CODEX_MAP[id]
         if (item) pushToast(`解锁${item.cat === 'star' ? '星空图鉴' : item.cat === 'quote' ? '角色语录' : '回忆'} · ${item.name}`, '✦', '#7dd3fc')
       })
+      if (fresh.length) sfx('unlock')
     }
   }, [node, state.unlocked, unlockCodex, pushToast])
 
@@ -109,8 +113,23 @@ export default function StoryScreen() {
     if (node.ch > 0 && lastChRef.current !== node.ch) {
       lastChRef.current = node.ch
       setChapterCard(node.ch)
+      sfx('chapter')
     }
   }, [node])
+
+  /* 段落独白朗读：节点文字出来后用浏览器 TTS 念一遍
+     （合成语音，不是真人配音；可在左下角关闭） */
+  useEffect(() => {
+    if (!node || !node.tx) return
+    stopSpeak()
+    const t = setTimeout(() => speak(node.tx), 320)
+    return () => {
+      clearTimeout(t)
+      stopSpeak()
+    }
+  }, [node])
+
+  useEffect(() => () => stopSpeak(), [])
 
   const { shown, done, skip } = useTypewriter(node ? node.tx : '')
 
@@ -122,6 +141,7 @@ export default function StoryScreen() {
     if (node.cg && cgForRef.current !== node.id) {
       cgForRef.current = node.id
       setCgOpen(true)
+      sfx('memory')
     }
     if (!node.cg) setCgOpen(false)
   }, [node])
@@ -157,6 +177,7 @@ export default function StoryScreen() {
   }, [advance])
 
   const onChoose = (choice) => {
+    sfx('confirm')
     pushToast(`♥ 好感 +${choice.aff}`, '♥', routeChar ? routeChar.colors.primary : '#f472b6')
     applyChoice(choice)
   }

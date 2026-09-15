@@ -9,10 +9,10 @@
 // ==========================
 
 import { useEffect, useState } from 'react'
-import spriteImg from '../assets/enemies/sprite.jpg'
-import houndImg from '../assets/enemies/hound.jpg'
-import reaperImg from '../assets/enemies/reaper.jpg'
-import abyssImg from '../assets/enemies/abyss.jpg'
+import spriteImg from '../assets/enemies/sprite.webp'
+import houndImg from '../assets/enemies/hound.webp'
+import reaperImg from '../assets/enemies/reaper.webp'
+import abyssImg from '../assets/enemies/abyss.webp'
 
 const ENEMY_IMG = {
   sprite: { src: spriteImg, cut: 250, soft: 238, mode: 'chroma', frame: { width: '300%', left: '3%', top: '-34%' } },

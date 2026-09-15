@@ -11,7 +11,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "validate": "node scripts/validate.mjs"
+    "validate": "node scripts/validate.mjs",
+    "check:imports": "node scripts/check-imports.mjs"
   },
   "dependencies": {
     "react": "^19.1.0",

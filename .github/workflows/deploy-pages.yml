@@ -1,0 +1,73 @@
+# 构建并发布到 GitHub Pages
+#
+# 触发：推送到 main，或在 Actions 页面手动 Run workflow
+# 产物：dist/ 目录，发布到 https://<用户名>.github.io/<仓库名>/
+#
+# 说明：vite.config.js 里 base 为 './'（相对路径），
+# 因此产物放在 /silver-spork/ 子路径下也能正确加载资源，无需改配置。
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# GITHUB_TOKEN 权限：读代码 + 写 Pages + 取 OIDC 令牌用于部署
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 同一时间只跑一个部署，新的推送取消排队中的旧任务
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: 构建
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: 安装依赖（严格按 package-lock.json）
+        run: npm ci
+
+      - name: 校验剧情数据链
+        run: npm run validate
+
+      - name: 校验 import 路径大小写
+        run: npm run check:imports
+
+      - name: 构建产物
+        run: npm run build
+
+      - name: 启用 / 读取 Pages 配置
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: 上传 dist 作为 Pages 产物
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: 发布
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: 发布到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

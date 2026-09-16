@@ -1,13 +1,15 @@
 // ==========================
-// 场景背景层 v2（手绘星空照片底图 + 氛围染色 + 动态装饰）
+// 场景背景层 v3（GAL 标准：全屏场景图 + 轻微暗化 + 场景切换淡入淡出）
 //   star   静谧银河 —— 首页 / 序章与剧情对话
 //   void   UI 底图   —— 图鉴 / 好感度 / 选人等面板页（星点克制）
 //   white  静谧银河 · 白之圣所  |  moon 星渊暗空 · 月夜
 //   sun    璀璨星海 · 晨曦      |  ember 星渊暗空 · 红月
 //   battle 星渊暗空 · 中心亮边缘压暗（战斗 UI 专用）
 //   ending 璀璨星海 · 浪漫治愈（结局专用）
+// 切换 variant 时新场景淡入覆盖旧场景（交叉淡化），动画结束后卸载旧层
 // ==========================
 
+import { useEffect, useRef, useState } from 'react'
 import galaxy from '../assets/bg/galaxy.webp'
 import abyssBg from '../assets/bg/abyss.webp'
 import pastel from '../assets/bg/pastel.webp'
@@ -156,14 +158,15 @@ function Decor({ kind }) {
   return null
 }
 
-export default function SceneBG({ variant = 'void', accent = null }) {
+/* 单个场景层：底图 + 氛围染色 + 装饰 */
+function SceneLayer({ id, variant, accent, animate }) {
   const layer = LAYERS[variant] || LAYERS.void
   const overlayStyle = layer.vignette
     ? { background: 'radial-gradient(ellipse at 50% 42%, rgba(8,6,20,0.08) 0%, rgba(8,6,20,0.5) 68%, rgba(4,3,12,0.9) 100%)' }
     : { background: `linear-gradient(180deg, ${layer.top} 0%, ${layer.top} 30%, ${layer.bottom} 100%)` }
 
   return (
-    <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden" aria-hidden="true">
+    <div key={id} className={`absolute inset-0 ${animate ? 'gal-scene-in' : ''}`}>
       {/* 照片底图（缓慢呼吸式缩放） */}
       <img src={layer.src} alt="" className="anim-kenburns absolute inset-0 h-full w-full object-cover" />
       {/* 氛围染色 */}
@@ -176,6 +179,39 @@ export default function SceneBG({ variant = 'void', accent = null }) {
         />
       )}
       <Decor kind={layer.decor} />
+    </div>
+  )
+}
+
+export default function SceneBG({ variant = 'void', accent = null }) {
+  // 场景层叠栈：variant 变化时旧层保留在下方，新层淡入覆盖
+  const [stack, setStack] = useState([{ v: variant, id: 0 }])
+  const idRef = useRef(0)
+
+  useEffect(() => {
+    setStack((prev) => {
+      if (prev[prev.length - 1].v === variant) return prev
+      idRef.current += 1
+      return [...prev, { v: variant, id: idRef.current }].slice(-2)
+    })
+  }, [variant])
+
+  // 淡入完成后卸载被覆盖的旧场景
+  useEffect(() => {
+    if (stack.length < 2) return
+    const t = setTimeout(() => setStack((s) => (s.length > 1 ? s.slice(-1) : s)), 1100)
+    return () => clearTimeout(t)
+  }, [stack])
+
+  const under = stack.length > 1 ? stack[0] : null
+  const top = stack[stack.length - 1]
+
+  return (
+    <div className="pointer-events-none fixed inset-0 z-[1] overflow-hidden" aria-hidden="true">
+      {under && (
+        <SceneLayer id={`u${under.id}`} variant={under.v} accent={null} animate={false} />
+      )}
+      <SceneLayer id={`t${top.id}`} variant={top.v} accent={accent} animate={stack.length > 1} />
     </div>
   )
 }

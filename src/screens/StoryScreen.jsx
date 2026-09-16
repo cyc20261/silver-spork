@@ -1,16 +1,18 @@
 // ==========================
-// 主线剧情界面：打字机 + 分支选择 + 章节卡 + 回忆CG
+// 主线剧情界面（标准 GALGAME 风格）
+// 全屏背景 + 站位立绘 + 底部对话框（打字机）+ 全屏点击推进 + 居中选项弹窗
+// 剧情 / 好感 / 多结局逻辑与原先完全一致，仅重构 UI 层
 // ==========================
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useGame, useNav, CHARACTERS } from '../game/store'
 import { useToast } from '../game/toast'
 import { sfx, speak, stopSpeak } from '../game/audio'
-import { getNode, getRoute, CHAPTER_TITLES } from '../data/story'
+import { getNode, CHAPTER_TITLES } from '../data/story'
 import { BATTLES } from '../data/battles'
 import { CODEX_MAP } from '../data/codex'
 import { affTier } from '../data/characters'
-import Portrait from '../components/Portrait'
+import GalPortrait from '../components/GalPortrait'
 import SceneBG from '../components/SceneBG'
 import CGCard from '../components/CGCard'
 
@@ -51,15 +53,15 @@ function useTypewriter(text, speed = 32) {
   return { shown, done, skip }
 }
 
-/* ---------------- 说话人名牌 ---------------- */
+/* ---------------- GAL 名字牌（角色专属配色） ---------------- */
 function SpeakerTag({ node, routeChar }) {
   if (node.sp === 'char' && routeChar) {
     return (
       <span
-        className="rounded-xl px-4 py-1 text-lg font-bold text-white shadow-lg"
+        className="rounded-t-lg rounded-br-lg border border-white/30 px-4 py-1 text-base font-bold text-white"
         style={{
-          background: `linear-gradient(120deg, ${routeChar.colors.deep}cc, ${routeChar.colors.primary}cc)`,
-          boxShadow: `0 4px 20px ${routeChar.colors.primary}55`,
+          background: `linear-gradient(120deg, ${routeChar.colors.deep}e6, ${routeChar.colors.primary}e6)`,
+          boxShadow: `0 4px 18px ${routeChar.colors.primary}66`,
         }}
       >
         {routeChar.name}
@@ -67,9 +69,17 @@ function SpeakerTag({ node, routeChar }) {
     )
   }
   if (node.sp === 'you') {
-    return <span className="glass rounded-xl px-4 py-1 text-lg font-bold text-sky-100">你 · 观测者</span>
+    return (
+      <span className="rounded-t-lg rounded-br-lg border border-white/25 bg-[#10142e]/85 px-4 py-1 text-base font-bold text-sky-100">
+        你 · 观测者
+      </span>
+    )
   }
-  return <span className="glass rounded-xl px-4 py-1 text-base font-bold tracking-[0.3em] text-indigo-200/90">✦ 观测记录</span>
+  return (
+    <span className="rounded-t-lg rounded-br-lg border border-white/15 bg-[#10142e]/75 px-4 py-1 text-sm font-bold tracking-[0.3em] text-indigo-200/90">
+      ✦ 观测记录
+    </span>
+  )
 }
 
 export default function StoryScreen() {
@@ -153,7 +163,7 @@ export default function StoryScreen() {
     if (node.next) gotoNode(node.next)
   }
 
-  // 推进
+  // 推进：打字中 → 跳过；完毕 → 下一节点（有选项/战斗/结局/选人时点击无效）
   const advance = useCallback(() => {
     if (!node) return
     if (!done) {
@@ -163,6 +173,12 @@ export default function StoryScreen() {
     if (node.choices || node.battle || node.ending || node.select) return
     if (node.next) gotoNode(node.next)
   }, [node, done, skip, gotoNode])
+
+  // GAL 核心交互：点击画面任意位置推进（按钮与弹层自己处理事件）
+  const onScreenClick = (e) => {
+    if (e.target.closest('button')) return
+    advance()
+  }
 
   // 键盘：空格 / 回车 推进
   useEffect(() => {
@@ -176,10 +192,18 @@ export default function StoryScreen() {
     return () => window.removeEventListener('keydown', onKey)
   }, [advance])
 
-  const onChoose = (choice) => {
+  // 选项弹窗：选中 → 淡出 → 应用分支
+  const [chosenIdx, setChosenIdx] = useState(null)
+  useEffect(() => {
+    setChosenIdx(null)
+  }, [node?.id])
+
+  const onChoose = (choice, i) => {
+    if (chosenIdx != null) return
+    setChosenIdx(i)
     sfx('confirm')
     pushToast(`♥ 好感 +${choice.aff}`, '♥', routeChar ? routeChar.colors.primary : '#f472b6')
-    applyChoice(choice)
+    setTimeout(() => applyChoice(choice), 320)
   }
 
   const onEnding = () => {
@@ -193,10 +217,21 @@ export default function StoryScreen() {
   const tier = affTier(aff)
   const battleCfg = node.battle ? BATTLES[node.battle] : null
   const portraitEx = node.sp === 'char' && node.ex ? node.ex : 'normal'
+  const hasAction = node.select || node.battle || node.ending
 
   return (
-    <div className="relative h-full select-none overflow-hidden">
+    <div className="relative h-full select-none overflow-hidden" onClick={onScreenClick}>
       <SceneBG variant={node.bg || 'void'} />
+
+      {/* 立绘（左右站位 / 表情切换 / 旁白时压暗） */}
+      {routeChar && (
+        <GalPortrait
+          charId={routeChar.id}
+          expression={portraitEx}
+          side={node.side || 'right'}
+          speaking={node.sp !== 'narr'}
+        />
+      )}
 
       {/* 顶部 HUD */}
       <div className="absolute inset-x-0 top-0 z-20 flex items-center justify-between gap-2 p-3 sm:p-4">
@@ -216,103 +251,84 @@ export default function StoryScreen() {
         )}
       </div>
 
-      {/* 立绘 */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-[248px] z-10 flex justify-center sm:bottom-[262px]">
-        <div key={`${routeChar?.id}-${node.id}`} className="anim-fade-in">
-          {routeChar && (
-            <div className="anim-float relative">
-              <div
-                className="absolute inset-x-8 bottom-2 top-10 rounded-full blur-2xl"
-                style={{ background: `${routeChar.colors.primary}30` }}
-              />
-              <Portrait
-                charId={routeChar.id}
-                expression={portraitEx}
-                mode="scene"
-                className="relative h-[50vh] max-h-[440px] w-auto"
-                glow={false}
-              />
-            </div>
-          )}
-        </div>
-      </div>
+      {/* 底部对话框（≈25vh 半透明黑框） */}
+      <div className="absolute inset-x-0 bottom-0 z-20 px-2 pb-2 sm:px-4 sm:pb-4">
+        <div className="gal-dialog relative mx-auto flex min-h-[24vh] w-full max-w-5xl flex-col px-5 pb-5 pt-6 sm:px-8">
+          <div className="absolute -top-4 left-4 sm:left-6">
+            <SpeakerTag node={node} routeChar={routeChar} />
+          </div>
 
-      {/* 对话框 */}
-      <div className="absolute inset-x-0 bottom-0 z-20 px-3 pb-4 sm:px-6 sm:pb-6">
-        <div className="mx-auto max-w-3xl">
-          {/* 选择项 */}
-          {node.choices && done && (
-            <div className="mb-3 flex flex-col gap-2.5">
-              {node.choices.map((choice, i) => (
-                <button
-                  key={i}
-                  className="glass card-hover group flex items-center gap-3 rounded-2xl px-5 py-3.5 text-left"
-                  onClick={() => onChoose(choice)}
-                >
-                  <span className="text-lg opacity-70 transition group-hover:opacity-100" style={{ color: routeChar?.colors.primary }}>✧</span>
-                  <span className="flex-1 text-[15px] leading-relaxed text-white/95">{choice.tx}</span>
-                  <span className="rounded-full border border-pink-300/40 bg-pink-400/15 px-2 py-0.5 text-[11px] text-pink-200">♥ +{choice.aff}</span>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* 主对话框 */}
-          <div
-            className="glass-deep relative cursor-pointer rounded-3xl px-5 pb-5 pt-4 sm:px-7 sm:pb-6"
-            onClick={advance}
+          <p
+            className={`min-h-[4.2em] flex-1 text-[15px] leading-[2] text-white/95 sm:text-base ${!done ? 'typing-caret' : ''}`}
           >
-            <div className="absolute -top-4 left-5">
-              <SpeakerTag node={node} routeChar={routeChar} />
-            </div>
-            <p
-              className={`mt-4 min-h-[76px] text-[15px] leading-[1.9] text-white/95 sm:min-h-[64px] sm:text-base ${!done ? 'typing-caret' : ''}`}
-              onClick={(e) => { e.stopPropagation(); advance() }}
-            >
-              {shown}
-            </p>
+            {shown}
+          </p>
 
-            {/* 行动区 */}
-            <div className="mt-2 flex items-center justify-end gap-3">
-              {node.select && done && (
-                <button
-                  className="btn btn-primary anim-breathe"
-                  onClick={(e) => { e.stopPropagation(); navigate('select') }}
-                >
-                  ✦ 前往星灵之庭
-                </button>
-              )}
-              {battleCfg && done && (
-                <button
-                  className="btn btn-primary anim-breathe"
-                  style={{ boxShadow: `0 6px 26px ${battleCfg.color}66` }}
-                  onClick={(e) => { e.stopPropagation(); navigate('battle', { battleId: node.battle, next: node.next }) }}
-                >
-                  ⚔ 进入战斗 · {battleCfg.name}
-                </button>
-              )}
-              {node.ending && done && (
-                <button
-                  className="btn btn-primary anim-breathe"
-                  onClick={(e) => { e.stopPropagation(); onEnding() }}
-                >
-                  ✦ 走向结局
-                </button>
-              )}
-              {done && !node.choices && !node.select && !node.battle && !node.ending && node.next && (
-                <span className="anim-next text-sm text-indigo-200/90">▼ 点击继续</span>
-              )}
-              {done && node.choices && <span className="text-xs text-white/45">做出你的选择</span>}
-            </div>
+          {/* 行动区（战斗 / 结局 / 选人 / 继续提示） */}
+          <div className="mt-2 flex items-center justify-end gap-3">
+            {node.select && done && (
+              <button
+                className="btn btn-primary anim-breathe"
+                onClick={(e) => { e.stopPropagation(); navigate('select') }}
+              >
+                ✦ 前往星灵之庭
+              </button>
+            )}
+            {battleCfg && done && (
+              <button
+                className="btn btn-primary anim-breathe"
+                style={{ boxShadow: `0 6px 26px ${battleCfg.color}66` }}
+                onClick={(e) => { e.stopPropagation(); navigate('battle', { battleId: node.battle, next: node.next }) }}
+              >
+                ⚔ 进入战斗 · {battleCfg.name}
+              </button>
+            )}
+            {node.ending && done && (
+              <button
+                className="btn btn-primary anim-breathe"
+                onClick={(e) => { e.stopPropagation(); onEnding() }}
+              >
+                ✦ 走向结局
+              </button>
+            )}
+            {done && !hasAction && !node.choices && node.next && (
+              <span className="anim-next pr-1 text-lg text-indigo-200/90">▼</span>
+            )}
+            {done && node.choices && <span className="pr-1 text-xs text-white/45">做出你的选择</span>}
           </div>
         </div>
       </div>
+
+      {/* 选项弹窗：画面中央 · 白色半透明按钮 */}
+      {node.choices && done && (
+        <div
+          className={`pointer-events-none fixed inset-0 z-30 flex items-center justify-center bg-[#04071a]/30 ${chosenIdx != null ? 'gal-choices-out' : 'gal-choices'}`}
+        >
+          <div className="flex flex-col items-center gap-3.5">
+            {node.choices.map((choice, i) => (
+              <button
+                key={i}
+                className="gal-choice pointer-events-auto flex items-center gap-3"
+                style={{
+                  '--choice-accent': routeChar?.colors.primary || '#a5b4fc',
+                  '--choice-glow': `${routeChar?.colors.primary || '#a5b4fc'}88`,
+                }}
+                onClick={(e) => { e.stopPropagation(); onChoose(choice, i) }}
+              >
+                <span className="text-lg" style={{ color: routeChar?.colors.primary }}>✧</span>
+                <span className="flex-1">{choice.tx}</span>
+                <span className="rounded-full border border-pink-300/80 bg-pink-100/90 px-2 py-0.5 text-[11px] font-bold text-pink-500">♥ +{choice.aff}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* 章节过渡卡 */}
       {chapterCard != null && chapterTitle && (
         <div
           className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-[#0b1026]/80 backdrop-blur-md"
-          onClick={() => setChapterCard(null)}
+          onClick={(e) => { e.stopPropagation(); setChapterCard(null) }}
         >
           <div className="anim-chapter text-center">
             <div className="text-sm tracking-[0.6em] text-indigo-200/70">CHAPTER {chapterCard}</div>
@@ -325,7 +341,7 @@ export default function StoryScreen() {
 
       {/* 回忆 CG */}
       {node.cg && cgOpen && (
-        <div className="fixed inset-0 z-40 flex items-center justify-center bg-[#0b1026]/85 px-5 backdrop-blur-md" onClick={closeCg}>
+        <div className="fixed inset-0 z-40 flex items-center justify-center bg-[#0b1026]/85 px-5 backdrop-blur-md" onClick={(e) => { e.stopPropagation(); closeCg() }}>
           <div className="anim-pop w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
             <CGCard memId={node.cg} />
             <div className="mt-5 text-center">

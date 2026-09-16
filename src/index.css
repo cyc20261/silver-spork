@@ -457,3 +457,94 @@ body {
   .anim-dust { animation: none !important; }
   .codex-sweep::before { transition: none !important; }
 }
+
+/* ============================================================
+   GAL 视觉小说模式（标准 galgame UI）
+   ============================================================ */
+
+/* ---------- 场景切换：新场景淡入覆盖旧场景 ---------- */
+.gal-scene-in { animation: galSceneIn 1s ease both; }
+@keyframes galSceneIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ---------- 立绘登场 / 表情切换 ---------- */
+.gal-sprite-in { animation: galSpriteIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes galSpriteIn {
+  from { opacity: 0; transform: translateY(26px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 害羞腮红（两颊椭圆红晕，随表情淡入） */
+.gal-blush {
+  position: absolute;
+  width: 8%;
+  aspect-ratio: 2.1 / 1;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 118, 138, 0.6), rgba(255, 118, 138, 0.3) 55%, transparent 78%);
+  filter: blur(2.5px);
+  pointer-events: none;
+  animation: galBlushIn 0.55s ease both;
+}
+@keyframes galBlushIn {
+  from { opacity: 0; transform: scale(0.4); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ---------- 底部对话框：半透明黑 · 圆角 · 25vh ---------- */
+.gal-dialog {
+  background: linear-gradient(180deg, rgba(10, 13, 32, 0.66) 0%, rgba(7, 9, 24, 0.82) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 20px;
+  box-shadow: 0 -8px 44px rgba(2, 4, 18, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+}
+
+/* ---------- 选项弹窗 ---------- */
+.gal-choices { animation: galChoicesIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@keyframes galChoicesIn {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+/* 选中后整体淡出（声明在后，同时存在时覆盖入场动画） */
+.gal-choices-out { animation: galChoicesOut 0.32s ease both; }
+@keyframes galChoicesOut {
+  to { opacity: 0; transform: scale(0.96); }
+}
+
+/* 白色半透明选项按钮 · hover 高亮角色色 */
+.gal-choice {
+  width: min(560px, 88vw);
+  border-radius: 14px;
+  border: 1.5px solid rgba(255, 255, 255, 0.88);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.94), rgba(238, 243, 255, 0.86));
+  color: #232849;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.55;
+  padding: 0.85rem 1.35rem;
+  box-shadow: 0 8px 30px rgba(3, 6, 24, 0.42);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s, border-color 0.22s, background 0.22s;
+}
+.gal-choice:hover {
+  transform: translateY(-3px) scale(1.02);
+  border-color: var(--choice-accent, #a5b4fc);
+  background: linear-gradient(135deg, #ffffff, #f2f7ff);
+  box-shadow: 0 14px 44px var(--choice-glow, rgba(165, 180, 252, 0.55));
+}
+.gal-choice:active { transform: translateY(-1px) scale(0.99); }
+
+@media (prefers-reduced-motion: reduce) {
+  .gal-scene-in,
+  .gal-sprite-in,
+  .gal-choices,
+  .gal-choices-out,
+  .gal-blush { animation: none !important; }
+}
